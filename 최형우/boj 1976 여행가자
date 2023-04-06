@@ -1,0 +1,91 @@
+#include<iostream>
+#include<vector>
+#include<string>
+#include<stack>
+#include<tuple>
+#include<queue>
+#include<algorithm>
+#include<unordered_map>
+//boj 1976 여행가자
+//그래프, BFS
+//여행 계획이 A B C D라면
+//A에서 B, B에서 C, C에서 D로 갈 수 있다는 걸 확인하면
+using namespace std;
+
+const int INF = 0x7f7f7f7f;
+
+typedef long long ll;
+
+int n, m;
+
+vector<int> adj[205];
+
+bool vis[205];
+
+int dx[4] = { -1, 1, 0, 0 };
+int dy[4] = { 0, 0, -1, 1 };
+
+int goal[1005];
+
+int cnt = 0;
+
+bool BFS(int s, int e)
+{
+	fill(vis + 1, vis + n + 1, 0);
+	
+	queue<int> Q;
+	Q.push(s);
+	vis[s] = 1;
+
+	while (!Q.empty())
+	{
+		cnt++;
+		int cur = Q.front(); Q.pop();
+
+		if (cur == e) return true;
+
+		for (auto nxt : adj[cur])
+		{
+			if (vis[nxt]) continue;
+
+			Q.push(nxt);
+			vis[nxt] = 1;
+		}
+	}
+	return false;
+}
+
+int main()
+{
+	ios::sync_with_stdio(0);
+	cin.tie(0);
+
+	cin >> n;
+	cin >> m;
+
+	for (int i = 1; i <= n; i++)
+	{
+		for (int j = 1; j <= n; j++)
+		{
+			int input;
+			cin >> input;
+			if (input == 1)
+			{
+				adj[i].push_back(j);
+				adj[j].push_back(i);
+			}
+		}
+	}
+
+	for (int i = 1; i <= m; i++) cin >> goal[i];
+
+	for (int i = 1; i < m; i++)
+	{
+		if (!BFS(goal[i], goal[i + 1]))
+		{
+			cout << "NO";
+			return 0;
+		}
+	}
+	cout << "YES";
+}
