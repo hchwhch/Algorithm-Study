@@ -1,0 +1,142 @@
+#include<iostream>
+#include<string>
+#include<stack>
+#include<tuple>
+#include<queue>
+#include<algorithm>
+
+using namespace std;
+
+int dx[4] = { 0, -1, 0, 1 };
+int dy[4] = { 1, 0, -1, 0 };
+
+//각 플레이어의 이동 가능한 거리
+int s[12];
+
+//각 플레이어 최종 성의 개수
+int cnt[12];
+
+int n, m, p;
+char board[1005][1005];
+
+//각 플레이어 마다 각자의 큐를 가지게 함
+queue<pair<int, int>> Q[12];
+
+//끝났는지 체크
+bool isEnd()
+{
+	/*cout << '\n';
+	for (int i = 0; i < n; i++)
+	{
+		for (int j = 0; j < m; j++) cout << board[i][j];
+		cout << '\n';
+	}*/
+
+	for (int i = 1; i <= p; i++)
+	{
+		if (!Q[i].empty()) return false;
+	}
+	return true;
+}
+
+//성 개수 체크
+void Count()
+{
+	for (int i = 0; i < n; i++)
+	{
+		for (int j = 0; j < m; j++)
+		{
+			if (board[i][j] != '#')
+			{
+				cnt[board[i][j] - '0']++;
+			}
+		}
+	}
+}
+
+//각 플레이어마다 이동가능한 거리 배열
+int dis[12][1005][1005];
+
+//BFS
+void BFS(int player)
+{
+	stack<pair<int, int>> S;
+
+
+	while (!Q[player].empty())
+	{
+		int cx, cy;
+		tie(cx, cy) = Q[player].front(); Q[player].pop();
+
+		for (int dir = 0; dir < 4; dir++)
+		{
+			int nx = cx + dx[dir];
+			int ny = cy + dy[dir];
+
+			if (nx < 0 || nx >= n || ny < 0 || ny >= m) continue;
+			if (board[nx][ny] != '.') continue;
+			if (dis[player][nx][ny] >= 0) continue;
+
+			dis[player][nx][ny] = dis[player][cx][cy] + 1;
+
+			//cout << nx << ' ' << ny << '\n';
+
+			if (dis[player][nx][ny] == s[player]) S.push({ nx, ny });
+			else Q[player].push({ nx, ny });
+			board[nx][ny] = board[cx][cy];
+		}
+	}
+
+	while (!S.empty())
+	{
+		auto e = S.top(); S.pop();
+		dis[player][e.first][e.second] = 0;
+		Q[player].push(e);
+	}
+}
+
+int main()
+{
+	ios::sync_with_stdio(0);
+	cin.tie(0);
+
+	cin >> n >> m >> p;
+
+	for (int i = 1; i <= p; i++) cin >> s[i];
+
+	for (int i = 1; i <= p; i++)
+	{
+		for (int j = 0; j < n; j++) fill(dis[i][j], dis[i][j] + m, -1);
+	}
+
+	for (int i = 0; i < n; i++)
+	{
+		string s;
+		cin >> s;
+		for (int j = 0; j < m; j++)
+		{
+			board[i][j] = s[j];
+			if (board[i][j] != '.' && board[i][j] != '#')
+			{
+				Q[board[i][j] - '0'].push({ i, j });
+				dis[board[i][j] - '0'][i][j] = 0;
+			}
+		}
+	}
+
+	while (1)
+	{
+		if (isEnd())
+		{
+			Count();
+			break;
+		}
+
+		for (int i = 1; i <= p; i++)
+		{
+			BFS(i);
+		}
+	}
+
+	for (int i = 1; i <= p; i++) cout << cnt[i] << ' ';
+}
