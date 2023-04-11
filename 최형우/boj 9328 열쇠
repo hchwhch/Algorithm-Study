@@ -1,0 +1,183 @@
+#include<iostream>
+#include<string>
+#include<stack>
+#include<tuple>
+#include<queue>
+#include<algorithm>
+#include<set>
+
+//새로운 열쇠를 찾을때마다 BFS를 새롭게 다시 시작하면됨
+//구현이 좀 빡세다.
+using namespace std;
+
+const int INF = 0x7f7f7f7f;
+
+typedef long long ll;
+
+int dx[4] = { 1, -1, 0, 0 };
+int dy[4] = { 0, 0, 1, -1 };
+
+char board[105][105];
+bool vis[105][105];
+
+bool isOpened[1000];
+
+vector<pair<int, int>> entry;
+
+int h, w;
+
+int ans = 0;
+
+void CheckEntry()
+{
+    entry.clear();
+
+    for (int i = 0; i < w; i++)
+    {
+        char c;
+        c = board[0][i];
+        if (c != '*')
+        {
+            if ('A' <= c && c <= 'Z')
+            {
+                if (isOpened[c]) entry.push_back({ 0, i });
+            }
+            else entry.push_back({ 0, i });
+        }
+        c = board[h - 1][i];
+        if (c != '*')
+        {
+            if ('A' <= c && c <= 'Z')
+            {
+                if (isOpened[c]) entry.push_back({ h - 1, i });
+            }
+            else entry.push_back({ h - 1, i });
+        }
+    }
+    for (int i = 0; i < h; i++)
+    {
+        char c;
+        c = board[i][0];
+        if (c != '*')
+        {
+            if ('A' <= c && c <= 'Z')
+            {
+                if (isOpened[c]) entry.push_back({ i, 0 });
+            }
+            else entry.push_back({ i, 0 });
+        }
+        c = board[i][w - 1];
+        if (c != '*')
+        {
+            if ('A' <= c && c <= 'Z')
+            {
+                if (isOpened[c]) entry.push_back({i, w - 1 });
+            }
+            else entry.push_back({ i, w - 1 });
+        }
+    }
+}
+
+void BFS()
+{
+    //cout << '\n';
+    //for (int i = 0; i < h; i++)
+    //{
+    //    for (int j = 0; j < w; j++) cout << vis[i][j];
+    //    cout << '\n';
+    //}
+
+    for (int i = 0; i < h; i++) fill(vis[i], vis[i] + w, 0);
+
+    queue<pair<int, int>> Q;
+
+    CheckEntry();
+
+    for (int i = 0; i < entry.size(); i++)
+    {
+        Q.push(entry[i]);
+        vis[entry[i].first][entry[i].second] = 1;
+    }
+
+    while (!Q.empty())
+    {
+        int cx, cy;
+        tie(cx, cy) = Q.front(); Q.pop();
+
+        if ('a' <= board[cx][cy] && board[cx][cy] <= 'z')
+        {
+            if (isOpened[board[cx][cy] - 32] == false)
+            {
+                isOpened[board[cx][cy] - 32] = 1;
+
+                board[cx][cy] = '.';
+
+                BFS();
+                return;
+            }
+            else board[cx][cy] = '.';
+        }
+
+        if (board[cx][cy] == '$')
+        {
+            ans++;
+            board[cx][cy] = '.';
+        }
+
+        for (int dir = 0; dir < 4; dir++)
+        {
+            int nx = cx + dx[dir];
+            int ny = cy + dy[dir];
+
+            if (nx < 0 || nx >= h || ny < 0 || ny >= w) continue;
+            if (board[nx][ny] == '*') continue;
+            if ('A' <= board[nx][ny] && board[nx][ny] <= 'Z')
+            {
+                if (!isOpened[board[nx][ny]]) continue;
+            }
+            if (vis[nx][ny]) continue;
+
+            Q.push({ nx, ny });
+            vis[nx][ny] = 1;
+        }
+    }
+}
+
+int main()
+{
+    ios::sync_with_stdio(0);
+    cin.tie(0);
+
+    int t;
+    cin >> t;
+
+    while (t--)
+    {
+        ans = 0;
+
+        cin >> h >> w;
+
+        for (int i = 0; i < h; i++) fill(vis[i], vis[i] + w, 0);
+        fill(isOpened, isOpened + 1000, 0);
+        entry.clear();
+
+        for (int i = 0; i < h; i++)
+        {
+            string s;
+            cin >> s;
+            for (int j = 0; j < w; j++) board[i][j] = s[j];
+        }
+
+        string s;
+        cin >> s;
+
+        if (s != "0")
+        {
+            for (auto e : s) isOpened[e - 32] = 1;
+        }
+
+        BFS();
+
+        cout << ans << '\n';
+    }
+}
