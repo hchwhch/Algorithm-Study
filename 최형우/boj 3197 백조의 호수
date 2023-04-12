@@ -1,0 +1,179 @@
+#include<iostream>
+#include<string>
+#include<stack>
+#include<tuple>
+#include<queue>
+#include<algorithm>
+#include<set>
+//처음 생각나는 방식대로
+//녹이고, 만날 수 있는지 탐색하고
+//반복하면 r,c가 최대 1500이기 때문에
+//전체 탐색하면 최대 2250000으로 아주 크기 때문에
+//50번만 탐색해도 시간초과가 난다
+//그러므로 빙판이 언제 녹는지 BFS로 기록해놓고
+//그 정보를 이용해 만날 수 있는 최소시간을 알 
+
+using namespace std;
+
+const int INF = 0x7f7f7f7f;
+
+typedef long long ll;
+
+int dx[4] = { 1, -1, 0, 0 };
+int dy[4] = { 0, 0, 1, -1 };
+
+char board[1505][1505];
+int meltTime[1505][1505];
+int iceVis[1505][1505];
+bool vis[1505][1505];
+
+int dis[1505][1505];
+
+int r, c;
+
+vector<pair<int, int>> swan;
+
+queue<pair<int, int>> MeltingPos;
+
+int main()
+{
+    ios::sync_with_stdio(0);
+    cin.tie(0);
+
+    cin >> r >> c;
+
+    for (int i = 0; i < r; i++)
+    {
+        string s;
+        cin >> s;
+        for (int j = 0; j < c; j++)
+        {
+            board[i][j] = s[j];
+            if (board[i][j] == 'L') swan.push_back({ i, j });
+        }
+    }
+
+    if (r == 1 && c == 1)
+    {
+        cout << 0;
+        return 0;
+    }
+
+    for (int i = 0; i < r; i++)
+    {
+        for (int j = 0; j < c; j++)
+        {
+            if (vis[i][j]) continue;
+
+            queue<pair<int, int>> Q;
+
+            if (board[i][j] == '.' || board[i][j] == 'L')
+            {
+                Q.push({ i, j });
+                vis[i][j] = 1;
+            }
+
+            while (!Q.empty())
+            {
+                int cx, cy;
+                tie(cx, cy) = Q.front(); Q.pop();
+
+                for (int dir = 0; dir < 4; dir++)
+                {
+                    int nx = cx + dx[dir];
+                    int ny = cy + dy[dir];
+
+                    if (nx < 0 || nx >= r || ny < 0 || ny >= c) continue;
+                    if (vis[nx][ny]) continue;
+
+                    vis[nx][ny] = 1;
+                    if (board[nx][ny] == 'X')
+                    {
+                        MeltingPos.push({ nx, ny });
+                        meltTime[nx][ny] = 1;
+                        iceVis[nx][ny] = 1;
+                        continue;
+                    }
+                    Q.push({ nx, ny });
+                }
+            }
+        }
+    }
+
+//빙판이 언제 녹는지 BFS로 구한다
+    while (!MeltingPos.empty())
+    {
+        int cx, cy;
+        tie(cx, cy) = MeltingPos.front(); MeltingPos.pop();
+
+        for (int dir = 0; dir < 4; dir++)
+        {
+            int nx = cx + dx[dir];
+            int ny = cy + dy[dir];
+
+            if (nx < 0 || nx >= r || ny < 0 || ny >= c) continue;
+            if (iceVis[nx][ny] >= 1) continue;
+            if (board[nx][ny] != 'X') continue;
+
+            iceVis[nx][ny] = iceVis[cx][cy] + 1;
+            MeltingPos.push({ nx, ny });
+        }
+    }
+    
+    for (int i = 0; i < r; i++) fill(dis[i], dis[i] + c, -1);
+    queue<pair<int, int>> Q;
+    Q.push(swan[0]);
+    dis[swan[0].first][swan[0].second] = 0;
+
+//빙판이 언제 녹는지에 대한 정보를 이용해 만날 수 있는 최소시간을 구한다
+    int cnt = 0;
+    while (!Q.empty())
+    {
+        int cx, cy;
+        tie(cx, cy) = Q.front(); Q.pop();
+
+        cnt++;
+
+        for (int dir = 0; dir < 4; dir++)
+        {
+            int nx = cx + dx[dir];
+            int ny = cy + dy[dir];
+
+            if (nx < 0 || nx >= r || ny < 0 || ny >= c) continue;
+            if (dis[nx][ny] == -1)
+            {
+                if (board[nx][ny] == '.' || board[nx][ny] == 'L')
+                {
+                    Q.push({ nx,ny });
+                    dis[nx][ny] = dis[cx][cy];
+                }
+                else
+                {
+                    Q.push({ nx, ny });
+                    dis[nx][ny] = max(iceVis[nx][ny], dis[cx][cy]);
+                }
+            }
+            else
+            {
+                if (board[nx][ny] == '.' || board[nx][ny] == 'L')
+                {
+                    if (dis[cx][cy] < dis[nx][ny])
+                    {
+                        dis[nx][ny] = dis[cx][cy];
+                        Q.push({ nx, ny });
+                    }
+                }
+                else if (board[nx][ny] == 'X')
+                {
+                    if (dis[cx][cy] >= iceVis[nx][ny] && dis[cx][cy] < dis[nx][ny])
+                    {
+                        dis[nx][ny] = dis[cx][cy];
+                        Q.push({ nx, ny });
+                    }
+                }
+            }
+        }
+    }
+
+    cout << dis[swan[1].first][swan[1].second];
+}
