@@ -1,0 +1,113 @@
+#include<iostream>
+#include<string>
+#include<stack>
+#include<tuple>
+#include<queue>
+#include<algorithm>
+#include<bitset>
+//이차원 백트래킹 문제
+//중복되지 않는 조합으로
+//25C7 = 480700의 경우의 수가 나오므로 완전탐색 가능
+//모든 경우의 수를 BFS로 순회하며 조건에 맞는지 확인한다
+using namespace std;
+
+const int INF = 0x7f7f7f7f;
+
+typedef long long ll;
+
+int dx[4] = { 1, -1, 0, 0 };
+int dy[4] = { 0, 0, 1, -1 };
+
+char board[6][6];
+bool isUsed[6][6];
+
+bool vis[6][6];
+
+int x, y;
+
+int ans = 0;
+
+//소문난 칠공주의 조건에 만족하는지  함수
+void Check()
+{
+
+
+    for (int i = 0; i < 5; i++) fill(vis[i], vis[i] + 5, 0);
+    int cnt = 0;
+    int cntY = 0;
+    queue<pair<int, int>> Q;
+    for (int i = 0; i < 5; i++)
+    {
+        for (int j = 0; j < 5; j++)
+        {
+            if (isUsed[i][j])
+            {
+                Q.push({ i, j });
+                vis[i][j] = 1;
+                cnt++;
+                if (board[i][j] == 'Y') cntY++;
+                while (!Q.empty())
+                {
+                    int cx, cy;
+                    tie(cx, cy) = Q.front(); Q.pop();
+
+                    for (int dir = 0; dir < 4; dir++)
+                    {
+                        int nx = cx + dx[dir];
+                        int ny = cy + dy[dir];
+
+                        if (nx < 0 || nx >= 5 || ny < 0 || ny >= 5) continue;
+                        if (!isUsed[nx][ny] || vis[nx][ny]) continue;
+
+                        if (board[nx][ny] == 'Y') cntY++;
+                        cnt++;
+                        vis[nx][ny] = 1;
+                        Q.push({ nx, ny });
+                    }
+                }
+                if (cnt == 7 && cntY <= 3) ans++;
+                return;
+            }
+        }
+    }
+}
+
+//백트래킹 함수
+void solve(int cur, int x, int y) 
+{
+    if (cur == 7)
+    {
+        Check();
+        return;
+    }
+
+    for (int i = 0; i < 5; i++)
+    {
+        for (int j = 0; j < 5; j++)
+        {
+            if (i < x) continue;
+            if (i == x && j <= y) continue;
+
+            isUsed[i][j] = 1;
+            solve(cur + 1, i, j);
+            isUsed[i][j] = 0;
+        }
+    }
+}
+
+int main()
+{
+    ios::sync_with_stdio(0);
+    cin.tie(0);
+
+    for (int i = 0; i < 5; i++)
+    {
+        string s;
+        cin >> s;
+        for (int j = 0; j < 5; j++) board[i][j] = s[j];
+    }
+
+    solve(0, -1, -1);
+
+    cout << ans;
+}
