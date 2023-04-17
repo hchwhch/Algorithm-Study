@@ -1,0 +1,91 @@
+#include<iostream>
+#include<vector>
+#include<string>
+#include<stack>
+#include<queue>
+#include<tuple>
+
+using namespace std;
+
+const int INF = 0x7f7f7f7f;
+
+typedef long long ll;
+
+int dx[4] = { 1, -1, 0, 0 };
+int dy[4] = { 0, 0, 1, -1 };
+
+int board[10][10];
+
+vector<pair<int,int>> zero;
+
+bool Check(int x, int y, int num)
+{
+	for (int i = 0; i < 9; i++)
+	{
+		if (board[i][y] == num) return false;
+		if (board[x][i] == num) return false;
+	}
+
+//주변 9개 칸 중 같은 것이 있는지 확인
+//*주의* C언어에서 x / 3 * 3 != x 이다. 
+// '/'연산은 나머지를 날려버리기 때문이다.
+	for (int i = x / 3 * 3; i < x / 3 * 3 + 3; i++)
+	{
+		for (int j = y / 3 * 3; j < y / 3 * 3 + 3; j++)
+		{
+			if (board[i][j] == num) return false;
+		}
+	}
+
+	return true;
+}
+
+int ans[10][10];
+
+void solve(int cur)
+{
+//빈 칸을 다 채웠을 시 종료
+	if (cur == zero.size())
+	{
+		for (int i = 0; i < 9; i++)
+			for (int j = 0; j < 9; j++) ans[i][j] = board[i][j];
+		return;
+	}
+
+	int cx, cy;
+	tie(cx, cy) = zero[cur];
+
+//적절한 수인지 확인 후 다음 빈칸으로 넘어간다
+	for (int i = 1; i <= 9; i++)
+	{
+		if (Check(cx, cy, i))
+		{
+			board[cx][cy] = i;
+			solve(cur + 1);
+			board[cx][cy] = 0;
+		}
+	}
+}
+
+int main()
+{
+	ios::sync_with_stdio(0);
+	cin.tie(0);
+
+	for (int i = 0; i < 9; i++)
+	{
+		for (int j = 0; j < 9; j++)
+		{
+			cin >> board[i][j];
+			if (board[i][j] == 0) zero.push_back({ i, j });
+		}
+	}
+
+	solve(0);
+
+	for (int i = 0; i < 9; i++)
+	{
+		for (int j = 0; j < 9; j++) cout << ans[i][j] << ' ';
+		cout << '\n';
+	}
+}
