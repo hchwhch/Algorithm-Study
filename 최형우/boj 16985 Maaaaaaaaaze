@@ -1,0 +1,146 @@
+#include<iostream>
+#include<string>
+#include<stack>
+#include<tuple>
+#include<queue>
+#include<algorithm>
+
+//개복잡한 구현 + 백트래킹 + BFS
+using namespace std;
+
+#define end (cout << '\n')
+
+//3차원 상하좌우앞뒤
+int dx[6] = { 1, -1, 0, 0, 0, 0 };
+int dy[6] = { 0, 0, 1, -1, 0, 0 };
+int dz[6] = { 0, 0, 0, 0, 1, -1 };
+
+int board[5][5][5];
+
+bool cubeUsed[5];
+int resultCube[5][5][5];
+
+int dis[5][5][5];
+
+int ans = 0x7f7f7f7f;
+
+//큐브 완성해서 거리 BFS
+void BFS()
+{
+    for (int i = 0; i < 5; i++)
+    {
+        for (int j = 0; j < 5; j++) fill(dis[i][j], dis[i][j] + 5, -1);
+    }
+
+
+    queue<tuple<int, int, int>> Q;
+    
+    if (resultCube[0][0][0] == 1)
+    {
+        Q.push({ 0, 0, 0 });
+        dis[0][0][0] = 0;
+
+        while (!Q.empty())
+        {
+            int cx, cy, cz;
+            tie(cz, cx, cy) = Q.front(); Q.pop();
+
+            for (int dir = 0; dir < 6; dir++)
+            {
+                int nx = cx + dx[dir];
+                int ny = cy + dy[dir];
+                int nz = cz + dz[dir];
+
+                if (nx < 0 || nx >= 5 || ny < 0 || ny >= 5 || nz < 0 || nz >= 5) continue;
+                if (resultCube[nz][nx][ny] == 0 || dis[nz][nx][ny] >= 0) continue;
+
+                dis[nz][nx][ny] = dis[cz][cx][cy] + 1;
+                Q.push({ nz, nx, ny });
+            }
+        }
+
+        if(dis[4][4][4] != -1) ans = min(ans, dis[4][4][4]);
+    }
+
+}
+
+int cnt = 0;
+
+//큐브 쌓기(백트래킹)
+void SetCube(int cur)
+{
+    if (cur == 5)
+    {
+        cnt++;
+
+        BFS();
+        return;
+    }
+
+    for (int i = 0; i < 5; i++)
+    {
+        if (cubeUsed[i]) continue;
+        for (int j = 0; j < 5; j++)
+        {
+            for (int k = 0; k < 5; k++) resultCube[cur][j][k] = board[i][j][k];
+        }
+
+        cubeUsed[i] = 1;
+        SetCube(cur + 1);
+        cubeUsed[i] = 0;
+    }
+}
+
+//2차원 배열 회전 
+void Rotate(int cur)
+{
+    int tmp[5][5];
+
+    for (int i = 0; i < 5; i++)
+    {
+        for (int j = 0; j < 5; j++) tmp[j][4 - i] = board[cur][i][j];
+    }
+
+    for (int i = 0; i < 5; i++)
+    {
+        for (int j = 0; j < 5; j++)
+        {
+            board[cur][i][j] = tmp[i][j];
+        }
+    }
+}
+
+//회전 경우의수 백트래킹
+void RotateBackTrack(int cur)
+{
+    if (cur == 5)
+    {
+
+        SetCube(0);
+        return;
+    }
+
+    for (int i = 0; i < 4; i++)
+    {
+        Rotate(cur);
+        RotateBackTrack(cur + 1);
+    }
+}
+
+int main()
+{
+    ios::sync_with_stdio(0);
+    cin.tie(0);
+
+    for (int i = 0; i < 5; i++)
+    {
+        for (int j = 0; j < 5; j++)
+        {
+            for (int k = 0; k < 5; k++) cin >> board[i][j][k];
+        }
+    }
+
+    RotateBackTrack(0);
+
+    cout << (ans == 0x7f7f7f7f ? -1 : ans);
+}
