@@ -1,0 +1,77 @@
+#include<iostream>
+#include<string>
+#include<stack>
+#include<tuple>
+#include<queue>
+#include<algorithm>
+#include<bitset>
+//다져진 땅의 높이가 0~256일 때를 브루트 포스로
+//모두 확인하여 최소 시간을 알아낸다.
+//사용하고 남은 인벤토리의 블록이 0 이상이 돼야 한다.
+
+using namespace std;
+
+#define end (cout << '\n')
+
+int board[505][505];
+
+const int INF = 0x7f7f7f7f;
+
+int n, m, b;
+
+int main()
+{
+    ios::sync_with_stdio(0);
+    cin.tie(0);
+
+    cin >> n >> m >> b;
+
+    for (int i = 0; i < n; i++)
+    {
+        for (int j = 0; j < m; j++) cin >> board[i][j];
+    }
+
+    int ans = INF;
+    int ansH = -1;
+
+    for (int h = 0; h <= 256; h++)
+    {
+        int tmpB = b;
+
+        int t = 0;
+
+        for (int i = 0; i < n; i++)
+        {
+            for (int j = 0; j < m; j++)
+            {
+                if (h > board[i][j])
+                {
+                    tmpB -= (h - board[i][j]);
+                    t += (h - board[i][j]);
+                }
+                else if (h < board[i][j])
+                {
+                    tmpB += (board[i][j] - h);
+                    t += ((board[i][j] - h) * 2);
+                }
+            }
+        }
+
+        //cout << h << ' ' << tmpB << '\n';
+
+        if (tmpB >= 0)
+        {
+            if (t < ans)
+            {
+                ans = t;
+                ansH = h;
+            }
+            else if (t == ans)
+            {
+                ansH = max(ansH, h);
+            }
+        }
+    }
+
+    cout << ans << ' ' << ansH;
+}
