@@ -1,0 +1,97 @@
+#include<iostream>
+#include<string>
+#include<vector>
+#include<queue>
+#include<tuple>
+//아무 점이나 하나 골라서 가장 먼 노드를 찾고
+//그 노드에서 가장 먼 노드까지의 거리가 트리의 지름이 된다
+using namespace std;
+
+typedef long long ll;
+
+int d[50005];
+
+int n;
+
+vector<pair<int,int>> adj[100005];
+
+int dis[100005];
+
+int main()
+{
+    ios::sync_with_stdio(0);
+    cin.tie(0);
+
+    cin >> n;
+
+    for (int i = 1; i <= n; i++)
+    {
+        int curN;
+        cin >> curN;
+
+        int a, b;
+        
+        while (1)
+        {
+            cin >> a;
+            if (a == -1) break;
+            cin >> b;
+
+            adj[curN].push_back({ a, b });
+            adj[a].push_back({ curN, b });
+        }
+    }
+
+    fill(dis, dis + 100005, -1);
+
+    queue<int> Q;
+    dis[1] = 0;
+    Q.push(1);
+
+    int mxV = 0;
+    int mxN = 0;
+
+    while (!Q.empty())
+    {
+        int cur = Q.front(); Q.pop();
+
+        for (auto nxt : adj[cur])
+        {
+            if (dis[nxt.first] >= 0) continue;
+
+            dis[nxt.first] = dis[cur] + nxt.second;
+            Q.push(nxt.first);
+        }
+    }
+
+    for (int i = 1; i <= n; i++)
+    {
+        if (dis[i] > mxV)
+        {
+            mxV = dis[i];
+            mxN = i;
+        }
+    }
+
+    fill(dis, dis + 100005, -1);
+    dis[mxN] = 0;
+    Q.push(mxN);
+
+    int ans = 0;
+
+    while (!Q.empty())
+    {
+        int cur = Q.front(); Q.pop();
+
+        ans = max(ans, dis[cur]);
+
+        for (auto nxt : adj[cur])
+        {
+            if (dis[nxt.first] >= 0) continue;
+
+            dis[nxt.first] = dis[cur] + nxt.second;
+            Q.push(nxt.first);
+        }
+    }
+    cout << ans;
+}
