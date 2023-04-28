@@ -1,0 +1,66 @@
+#include<iostream>
+#include<string>
+#include<stack>
+#include<tuple>
+//전형적인 스택을 이용한 괄호처리 문제
+//스택을 이용해 한 번 휩쓸면서 답을 구해낼 수 있다.
+//각 문자가 나왔을 때 어떤 처리를 해줘야할지만 생각하면 된다.
+
+using namespace std;
+
+const int INF = 0x7f7f7f7f;
+
+stack<char> st;
+
+int main()
+{
+    ios::sync_with_stdio(0);
+    cin.tie(0);
+
+    //스택
+
+    string s;
+    cin >> s;
+
+    for (int i = 0; i < s.size(); i++)
+    {
+        if ('A' <= s[i] && s[i] <= 'Z') cout << s[i];
+        else if (s[i] == '(') st.push(s[i]);
+        else if (s[i] == ')')
+        {
+            while (st.top() != '(')
+            {
+                cout << st.top();
+                st.pop();
+            }
+        }
+        else if (s[i] == '+' || s[i] == '-')
+        {
+            while (!st.empty())
+            {
+                if (st.top() == '(') break;
+
+                cout << st.top();
+                st.pop();
+            }
+            st.push(s[i]);
+        }
+        else if (s[i] == '*' || s[i] == '/')
+        {
+            while (!st.empty())
+            {
+                if (st.top() == '+' || st.top() == '-') break;
+
+                cout << st.top();
+                st.pop();
+            }
+            st.push(s[i]);
+        }
+    }
+
+    while (!st.empty())
+    {
+        cout << st.top();
+        st.pop();
+    }
+}
