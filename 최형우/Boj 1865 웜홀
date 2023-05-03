@@ -1,0 +1,84 @@
+#include<iostream>
+#include<string>
+#include<vector>
+#include<queue>
+#include<tuple>
+//벨만포드 알고리즘의 음수 사이클 확인 방법을 통해
+//해결가능한 문제
+using namespace std;
+
+typedef long long ll;
+
+const int INF = 1000'0000;
+
+vector<pair<int, int>> adj[505];
+
+int n, m, w;
+
+int d[505];
+
+bool bf()
+{
+    fill(d, d + 505, INF);
+    
+    d[1] = 0;
+
+//n - 1번 동안 모든 간선을 확인해가며 최소 비용을 계산한다.
+    for (int i = 0; i < n - 1; i++)
+    {
+        for (int j = 1; j <= n; j++)
+        {
+            for (auto nxt : adj[j])
+            {
+                d[nxt.first] = min(d[nxt.first], d[j] + nxt.second);
+            }
+        }
+    }
+
+//음수 사이클이 존재하는지 확인한다.
+    for (int j = 1; j <= n; j++)
+    {
+        for (auto nxt : adj[j])
+        {
+            if (d[j] + nxt.second < d[nxt.first]) return true;
+        }
+    }
+
+    return false;
+}
+
+int main()
+{
+    ios::sync_with_stdio(0);
+    cin.tie(0);
+
+    int t;
+    cin >> t;
+
+    while (t--)
+    {
+        cin >> n >> m >> w;
+
+        for (int i = 1; i <= n; i++) adj[i].clear();
+
+        for (int i = 0; i < m; i++)
+        {
+            int s, e, t;
+            cin >> s >> e >> t;
+
+            adj[s].push_back({ e, t });
+            adj[e].push_back({ s, t });
+        }
+
+        for (int i = 0; i < w; i++)
+        {
+            int s, e, t;
+            cin >> s >> e >> t;
+
+            adj[s].push_back({ e, -t });
+        }
+        cout << (bf() ? "YES" : "NO") << '\n';
+    }
+
+
+}

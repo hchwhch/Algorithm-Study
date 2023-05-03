@@ -1,0 +1,95 @@
+#include<iostream>
+#include<string>
+#include<vector>
+#include<queue>
+#include<tuple>
+
+using namespace std;
+
+typedef long long ll;
+
+string vis[10005];
+
+int FuncD(int num)
+{
+    return num * 2 % 10000;
+}
+
+int FuncS(int num)
+{
+    if (num == 0) num = 9999;
+    else num--;
+
+    return num;
+}
+
+int FuncL(int num)
+{
+    return (num % 1000) * 10 + num / 1000;
+}
+
+int FuncR(int num)
+{
+    return (num % 10) * 1000 + num / 10;
+}
+
+int res[10005][4];
+
+char c[4] = { 'D', 'S', 'L', 'R' };
+
+int main()
+{
+    ios::sync_with_stdio(0);
+    cin.tie(0);
+
+    int t;
+    cin >> t;
+
+    for (int i = 0; i <= 9999; i++)
+    {
+        res[i][0] = FuncD(i);
+        res[i][1] = FuncS(i);
+        res[i][2] = FuncL(i);
+        res[i][3] = FuncR(i);
+    }
+
+    while (t--)
+    {
+        vector<bool> vis(10005);
+
+        int a, b;
+        cin >> a >> b;
+
+        string s;
+
+        queue<pair<int, string>> Q;
+        Q.push({ a, "" });
+        vis[a] = 1;
+
+        while (!Q.empty())
+        {
+            int cn;
+            string cs;
+            tie(cn, cs) = Q.front(); Q.pop();
+
+            if (cn == b)
+            {
+                cout << cs << '\n';
+                break;
+            }
+
+            for (int i = 0; i < 4; i++)
+            {
+                int nn = res[cn][i];
+                string ns = cs;
+
+                if (vis[nn]) continue;
+
+                ns.push_back(c[i]);
+                Q.push({ nn, ns });
+                vis[nn] = 1;
+                
+            }
+        }
+    }
+}
