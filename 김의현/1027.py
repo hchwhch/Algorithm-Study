@@ -12,17 +12,17 @@ for i in range(n):
     count = 0
     current = b[i]
     shy = 0
-    ex_shy = 0
+    ex_shy = None
     for x in range(left,-1,-1):
         shy = (b[x]-b[i]) / (x - i)
-        if ex_shy == 0 or shy < ex_shy:
+        if ex_shy is None or shy < ex_shy:
             count += 1
             ex_shy = shy
 
-    ex_shy = 0
+    ex_shy = None
     for y in range(right,n):
         shy = (b[y] - b[i]) / (y - i)
-        if ex_shy == 0 or shy > ex_shy:
+        if ex_shy is None or shy > ex_shy:
             count += 1
             ex_shy = shy
 
